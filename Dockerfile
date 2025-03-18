@@ -1,7 +1,7 @@
 FROM gradle:7.6.1-jdk11 AS build
-WORKDIR /app
+WORKDIR /home/gradle/demo
 COPY . .
-RUN gradle build
+RUN ./gradlew build
 
 FROM tomcat:9.0.73-jdk11-temurin
 
