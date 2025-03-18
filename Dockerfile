@@ -3,8 +3,9 @@ WORKDIR /app
 COPY . .
 RUN gradle build
 
-FROM openjdk:11-jre-slim
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
+FROM tomcat:9.0.73-jdk11-temurin
+
+COPY --from=build /app/build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
