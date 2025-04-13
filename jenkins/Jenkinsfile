@@ -95,10 +95,10 @@ pipeline {
         }      
       
       steps{
-        sh './gradlew sonarqube -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login="admin" -Dsonar.password="ensf400"'
+        sh './gradlew sonarqube -Dsonar.host.url=https://effective-rotary-phone-w5jj4jpr9gv29qj-9000.app.github.dev/ -Dsonar.login="admin" -Dsonar.password="ensf400"'
       }
     }
   }
 }
 
-// test to see if webhook is working
+// test to see if webhook is working abc
