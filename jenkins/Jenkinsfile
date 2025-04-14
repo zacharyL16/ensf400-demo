@@ -1,21 +1,19 @@
 // This jenkinsfile is used to run CI/CD on my local (Windows) box, no VM's needed.
 
 pipeline {
-
   agent any
 
-   environment {
-        // This is set so that the Python API tests will recognize it
-        // and go through the Zap proxy waiting at 9888
-        HTTP_PROXY = 'http://127.0.0.1:9888'
-        // Default Java Home for Jenkins (JDK 17)
-        JAVA_HOME = '/usr/lib/jvm/java-17-openjdk'
-        PATH = "${JAVA_HOME}/bin:${PATH}"
-   }
+  environment {
+    // This is set so that the Python API tests will recognize it
+    // and go through the Zap proxy waiting at 9888
+    HTTP_PROXY = 'http://127.0.0.1:9888'
+    // Default Java Home for Jenkins (JDK 17)
+    JAVA_HOME = '/usr/lib/jvm/java-17-openjdk'
+    PATH = "${JAVA_HOME}/bin:${PATH}"
+  }
 
   stages {
-
-    // build the war file (the binary).  This is the only
+    // build the war file (the binary). This is the only
     // place that happens.
     stage('Build') {
       environment {
@@ -79,62 +77,67 @@ pipeline {
         sh './gradlew jacocoTestReport'
       }
       post {
-          always {
-            junit 'build/test-results/bdd/*.xml'
-          }
+        always {
+          junit 'build/test-results/bdd/*.xml'
         }
+      }
     }
 
     // Runs an analysis of the code, looking for any
     // patterns that suggest potential bugs.
     stage('Static Analysis') {
-        environment {
-          // Override JAVA_HOME to use JDK 11 for this stage
-          JAVA_HOME = '/usr/lib/jvm/java-11-openjdk'
-          PATH = "${JAVA_HOME}/bin:${PATH}"
-        }      
-      
-      steps{
+      environment {
+        // Override JAVA_HOME to use JDK 11 for this stage
+        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk'
+        PATH = "${JAVA_HOME}/bin:${PATH}"
+      }
+      steps {
         sh './gradlew sonarqube -Dsonar.host.url=https://potential-space-potato-4j7rp5v9jj4w3gqx-9000.app.github.dev/ -Dsonar.login="admin" -Dsonar.password="ensf400"'
       }
     }
   }
 
+  // ===== ADDED GITHUB STATUS REPORTING =====
   post {
-        success {
-            script {
-                // Notify GitHub of success
-                updateGitHubCommitStatus(
-                    state: 'SUCCESS',
-                    context: env.GITHUB_CONTEXT,
-                    description: 'Build succeeded!',
-                    targetUrl: "${env.BUILD_URL}"
-                )
-            }
-        }
-        failure {
-            script {
-                // Notify GitHub of failure
-                updateGitHubCommitStatus(
-                    state: 'FAILURE',
-                    context: env.GITHUB_CONTEXT,
-                    description: 'Build failed!',
-                    targetUrl: "${env.BUILD_URL}"
-                )
-            }
-        }
-        aborted {
-            script {
-                // Notify GitHub if build was aborted
-                updateGitHubCommitStatus(
-                    state: 'ERROR',
-                    context: env.GITHUB_CONTEXT,
-                    description: 'Build aborted!',
-                    targetUrl: "${env.BUILD_URL}"
-                )
-            }
-        }
-        
+    success {
+      script {
+        updateGitHubCommitStatus(
+          state: 'SUCCESS',
+          context: 'Jenkins CI',
+          description: 'All checks passed',
+          targetUrl: "${env.BUILD_URL}"
+        )
+      }
+    }
+    failure {
+      script {
+        updateGitHubCommitStatus(
+          state: 'FAILURE',
+          context: 'Jenkins CI',
+          description: 'Build failed',
+          targetUrl: "${env.BUILD_URL}"
+        )
+      }
+    }
+    unstable {
+      script {
+        updateGitHubCommitStatus(
+          state: 'FAILURE', // GitHub doesn't have "unstable", so we use FAILURE
+          context: 'Jenkins CI',
+          description: 'Build unstable',
+          targetUrl: "${env.BUILD_URL}"
+        )
+      }
+    }
+    aborted {
+      script {
+        updateGitHubCommitStatus(
+          state: 'ERROR',
+          context: 'Jenkins CI',
+          description: 'Build aborted',
+          targetUrl: "${env.BUILD_URL}"
+        )
+      }
+    }
+  }
 }
-
-// test to see if webhook is working
