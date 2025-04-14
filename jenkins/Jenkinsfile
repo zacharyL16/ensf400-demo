@@ -1,9 +1,5 @@
 // This jenkinsfile is used to run CI/CD on my local (Windows) box, no VM's needed.
 
-options {
-    githubNotify(context: 'jenkins/ensf400-ci')
-}
-
 pipeline {
 
   agent any
