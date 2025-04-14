@@ -113,8 +113,8 @@ pipeline {
     aborted {
       githubNotify status: 'ABORTED', context: 'Jenkins CI/CD'
     }
-    
-}
 
+  }
+}
 
 // test to see if webhook is working abccaaba
