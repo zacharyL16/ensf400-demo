@@ -99,6 +99,42 @@ pipeline {
       }
     }
   }
+
+  post {
+        success {
+            script {
+                // Notify GitHub of success
+                updateGitHubCommitStatus(
+                    state: 'SUCCESS',
+                    context: env.GITHUB_CONTEXT,
+                    description: 'Build succeeded!',
+                    targetUrl: "${env.BUILD_URL}"
+                )
+            }
+        }
+        failure {
+            script {
+                // Notify GitHub of failure
+                updateGitHubCommitStatus(
+                    state: 'FAILURE',
+                    context: env.GITHUB_CONTEXT,
+                    description: 'Build failed!',
+                    targetUrl: "${env.BUILD_URL}"
+                )
+            }
+        }
+        aborted {
+            script {
+                // Notify GitHub if build was aborted
+                updateGitHubCommitStatus(
+                    state: 'ERROR',
+                    context: env.GITHUB_CONTEXT,
+                    description: 'Build aborted!',
+                    targetUrl: "${env.BUILD_URL}"
+                )
+            }
+        }
+        
 }
 
 // test to see if webhook is working
