@@ -99,22 +99,6 @@ pipeline {
       }
     }
   }
-
-  post {
-    success {
-      githubNotify status: 'SUCCESS', context: 'Jenkins CI/CD'
-    }
-    failure {
-      githubNotify status: 'FAILURE', context: 'Jenkins CI/CD'
-    }
-    unstable {
-      githubNotify status: 'ERROR', context: 'Jenkins CI/CD'
-    }
-    aborted {
-      githubNotify status: 'ABORTED', context: 'Jenkins CI/CD'
-    }
-
-  }
 }
 
 // test to see if webhook is working abccaaba
